@@ -1,0 +1,34 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "code": {
+          ".validate": "newData.isString() && root.child('codes').child(newData.val()).val() === auth.uid"
+        },
+        "nick": {
+          ".validate": "newData.isString() && newData.val().length <= 10"
+        }
+      }
+    },
+    "codes": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && !data.exists() && newData.val() === auth.uid",
+        ".validate": "$code.matches(/^[A-Z0-9]{6}$/)"
+      }
+    },
+    "rooms": {
+      "$room": {
+        ".read": "auth != null && $room.matches(/^(lobby|g-[a-z0-9]{6}-[a-z0-9]{1,12})$/)",
+        "peers": {
+          "$peer": {
+            ".write": "auth != null && auth.uid === $peer && $room.matches(/^(lobby|g-[a-z0-9]{6}-[a-z0-9]{1,12})$/)",
+            ".validate": "newData.child('code').val() === root.child('users').child(auth.uid).child('code').val()"
+          }
+        }
+      }
+    }
+  }
+}
